@@ -6,5 +6,12 @@ eth-pinger/node_modules/
 eth-pinger/yarn.lock
 eth-pinger/.env
 
-# === System files ===
-.DS_Store
+# === relayer ===
+relayer/.env
+relayer/yarn.lock
+relayer/node_modules/
+
+# === ping-receiver ===
+ping-receiver/Cargo.lock
+ping-receiver/.binpath
+ping-receiver/target/
