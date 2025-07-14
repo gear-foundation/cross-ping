@@ -1,0 +1,27 @@
+[workspace]
+
+members = ["app", "client"]
+
+[package]
+name = "ping-receiver"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ping-receiver-app = { path = "app" }
+
+[build-dependencies]
+ping-receiver-app = { path = "app" }
+sails-rs = { version = "0.8.1", features = ["wasm-builder"] }
+sails-idl-gen = "0.8.1"
+
+[dev-dependencies]
+ping-receiver = { path = ".", features = ["wasm-binary"] }
+ping-receiver-client = { path = "client" }
+sails-rs = { version = "0.8.1", features = ["gtest"] }
+gtest = "1.8.1"
+tokio = { version = "1.41", features = ["rt", "macros"] }
+parity-scale-codec = "3"
+
+[features]
+wasm-binary = []

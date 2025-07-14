@@ -1,0 +1,13 @@
+[package]
+name = "ping-receiver-app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sails-rs = "0.8.1"
+parity-scale-codec = { version = "3.6.4", default-features = false, features = ["derive"] }
+scale-info = { version = "2.10.0", default-features = false }
+
+[features]
+default = []
+wasm-binary = []
