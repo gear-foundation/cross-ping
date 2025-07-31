@@ -4,7 +4,7 @@ import { GetProof } from 'eth-proof';
 import { RLP } from '@ethereumjs/rlp';
 
 import { ETHEREUM_RPC_URL, ETH_CONTRACT_ADDRESS, ETH_PINGER_ABI, ETHEREUM_HTTPS_RPC_URL, BEACON_API_URL } from './config';
-import { normalizeHeader, normalizeBlock } from './helper';
+import { normalizeBlock } from './helper2'
 import { sailsProof } from './vara'
 
 export let ethereumProvider: ethers.WebSocketProvider | null = null;
@@ -49,12 +49,11 @@ export async function generateProof(txHash: string, slot: number, provider: WebS
     const rawHeader = await getBeaconHeader(slot);
     const rawBlock = await getBeaconBlock(slot);
 
-    console.log(rawBlock.body.execution_payload.extra_data);
+    console.log(rawBlock.body.randao_reveal);
 
-    const BaconHeaders = [normalizeHeader(rawHeader)];
     const BaconBlock = normalizeBlock(rawBlock);
 
-    console.log(BaconBlock.body.execution_payload);
+    console.log("extra_data",BaconBlock.body.execution_payload.extra_data);
 
     // Receipt Merkle proof (array of arrays)
     const proofArr = Array.from(result.receiptProof as ArrayLike<ArrayLike<Uint8Array>>,
@@ -80,14 +79,13 @@ export async function generateProof(txHash: string, slot: number, provider: WebS
     const ethToVaraEvent = {
         proof_block: {
             block: BaconBlock,
-            headers: BaconHeaders,
+            headers: [rawHeader],
         },
         proof: proofArr,
         transaction_index,
         receipt_rlp: rlpReceipt
     };
 
-    console.log(sailsProof.scaleCodecTypes['EthToVaraEvent']);
     const encodedProof = sailsProof.services.EthereumEventClient.functions.CheckProofs.encodePayload(ethToVaraEvent);
 
     console.log('ethToVaraEvent', encodedProof);
