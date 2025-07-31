@@ -15,7 +15,7 @@ async function main() {
 
     listenPingFromEthereum(ethApi, async (from: string, event: ethers.EventLog) => {
         const slot = await getSlotForEvent(event, ethApi);
-        const proof: any = await generateProof(event.transactionHash);
+        const proof: any = await generateProof(event.transactionHash, slot, ethApi);
         const msg: PingMessage = {
             from,
             blockNumber: event.blockNumber,

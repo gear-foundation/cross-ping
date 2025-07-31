@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@ethereumjs/rlp": "^10.0.0"
+  }
+}

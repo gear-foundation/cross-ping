@@ -2,13 +2,14 @@ import { GearApi } from '@gear-js/api';
 import { Keyring } from '@polkadot/api';
 import { Sails } from 'sails-js';
 import { SailsIdlParser } from 'sails-js-parser';
-import { VARA_RPC_URL, CHECKPOINT_LIGHT_CLIENT_IDL, CHECKPOINT_LIGHTH_CLIENT, HISTORICAL_PROXY_IDL, HISTORICAL_PROXY_ID, PING_RECEIVER_PROGRAM_ID, PING_RECEIVER_ROUTE, VARA_MNEMONIC_KEY} from './config';
+import { VARA_RPC_URL, CHECKPOINT_LIGHT_CLIENT_IDL, CHECKPOINT_LIGHTH_CLIENT, HISTORICAL_PROXY_IDL, HISTORICAL_PROXY_ID, PING_RECEIVER_PROGRAM_ID, PING_RECEIVER_ROUTE, VARA_MNEMONIC_KEY, PROOF_IDL} from './config';
 import { routeToHex } from './helper'
 import { PingMessage, NewCheckpointEvent } from './types';
 
 export let varaProvider: GearApi | null = null;
 export let sailsCheckpoint: Sails;
 export let sailsHistorical: Sails;
+export let sailsProof: Sails;
 
 export async function connectVara(): Promise<GearApi> {
   if (varaProvider) return varaProvider;
@@ -28,6 +29,11 @@ export async function connectVara(): Promise<GearApi> {
   sailsHistorical.parseIdl(HISTORICAL_PROXY_IDL);
   sailsHistorical.setApi(varaProvider);
   sailsHistorical.setProgramId(HISTORICAL_PROXY_ID as `0x${string}`);
+
+  // Proof IDL to encode proof
+   const parserProof = await SailsIdlParser.new();
+   sailsProof = new Sails(parserProof);
+   sailsProof.parseIdl(PROOF_IDL);
 
   console.log('✅ Connected to Vara!');
   return varaProvider;
@@ -67,6 +73,8 @@ export async function sendToHistoricalProxy(
       PING_RECEIVER_PROGRAM_ID,
       clientRoute
     )
+
+    console.log('final', trx);
     trx.withAccount(wallet);
     await trx.calculateGas();
     const result = await trx.signAndSend();

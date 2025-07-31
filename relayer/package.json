@@ -9,12 +9,16 @@
     "dev": "ts-node src/main.ts"
   },
   "dependencies": {
+    "@chainsafe/ssz": "^1.2.1",
     "@gear-js/api": "^0.42.0",
     "@polkadot/api": "^16.1.2",
+    "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "eth-proof": "^2.1.6",
     "ethers": "^6.11.1",
     "install": "^0.13.0",
+    "merkletreejs": "^0.5.2",
+    "npm": "^11.5.1",
     "rlp": "^3.0.0",
     "sails-js": "^0.4.2",
     "sails-js-parser": "^0.4.2",
