@@ -1,53 +1,60 @@
-import { connectVara, listenForNewCheckpoint, sailsCheckpoint, sailsHistorical, sendToHistoricalProxy, connectWallet } from './vara';
-import { connectEthereum, listenPingFromEthereum, getSlotForEvent, generateProof } from './ethereum';
+import { connectVara, connectWallet, varaProvider } from './vara';
+import { connectEthereum, listenPingFromEthereum } from './ethereum';
 import { ethers } from 'ethers';
+import { relayEthToVara } from '@gear-js/bridge';
+import { createPublicClient, http } from 'viem';
+import {
+  ETHEREUM_HTTPS_RPC_URL,
+  BEACON_API_URL,
+  CHECKPOINT_LIGHT_CLIENT,
+  HISTORICAL_PROXY_ID,
+  PING_RECEIVER_PROGRAM_ID,
+  PING_RECEIVER_SERVICE,
+  PING_RECEIVER_METHOD,
+} from './config';
 
-import { PingMessage, NewCheckpointEvent } from './types';
-
-let lastVaraSlot: number | null = null;
-let pingMessages: PingMessage[] = [];
-
+// Main relayer function
 async function main() {
-    // Connect to Vara and Ethereum
-    await connectVara();
-    const ethApi = await connectEthereum();
-    const wallet = connectWallet();
+  await connectVara();
+  const ethApi = await connectEthereum();
+  const wallet = connectWallet();
 
-    listenPingFromEthereum(ethApi, async (from: string, event: ethers.EventLog) => {
-        const slot = await getSlotForEvent(event, ethApi);
-        const proof: any = await generateProof(event.transactionHash, slot, ethApi);
-        const msg: PingMessage = {
-            from,
-            blockNumber: event.blockNumber,
-            txHash: event.transactionHash,
-            slot,
-            proof,
-        };
-        pingMessages.push(msg);
-        console.log('🟢 new ping message', msg);
-    });
+  // Viem public client for proof/relay
+  const viemPublicClient = createPublicClient({
+    transport: http(ETHEREUM_HTTPS_RPC_URL),
+  });
 
-    listenForNewCheckpoint(sailsCheckpoint, (event: NewCheckpointEvent) => {
-        lastVaraSlot = Number(event.slot);
-        console.log('🟢 new checkpoint', event);
+  listenPingFromEthereum(ethApi, async (_from: string, event: ethers.EventLog) => {
+    const txHash = event.transactionHash as `0x${string}`;
+    console.log('🟢 new PingFromEthereum tx:', txHash);
 
-        if (!pingMessages.length) return;
+    try {
+      const res = await relayEthToVara(
+        txHash,
+        BEACON_API_URL,
+        viemPublicClient,
+        varaProvider!,
+        CHECKPOINT_LIGHT_CLIENT,
+        HISTORICAL_PROXY_ID,
+        PING_RECEIVER_PROGRAM_ID,
+        PING_RECEIVER_SERVICE,
+        PING_RECEIVER_METHOD,
+        wallet
+      );
 
-        // Relay ready messages
-        const ready = pingMessages.filter(msg => lastVaraSlot !== null && msg.slot <= lastVaraSlot);
-        if (ready.length) {
-            console.log(`🚀 [Checkpoint ${lastVaraSlot}] Ready for relay:`, ready.map(m => m.txHash));
-            sendToHistoricalProxy(sailsHistorical, wallet, ready[0])
-        }
+      console.log('🚀 Relayed Vara tx:', res.txHash, 'msgId:', res.msgId);
+      if (res.error) console.error('⚠️ Proxy error:', res.error);
+      const finalized = await res.isFinalized;
+      console.log('✅ Finalized:', finalized);
+    } catch (e) {
+      console.error('❌ relayEthToVara failed:', e);
+    }
+  });
 
-        // Clean up the queue
-        pingMessages = pingMessages.filter(msg => lastVaraSlot === null || msg.slot > lastVaraSlot);
-    });
-
-    console.log('\n🚀 Relayer is running and listening for Pings from Ethereum...');
+  console.log('\n🚀 Relayer is running and listening for Pings from Ethereum...');
 }
 
 main().catch(e => {
-    console.error('Fatal:', e);
-    process.exit(1);
+  console.error('Fatal:', e);
+  process.exit(1);
 });
