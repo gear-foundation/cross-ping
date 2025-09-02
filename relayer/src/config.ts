@@ -26,7 +26,7 @@ export const CHECKPOINT_LIGHT_CLIENT = process.env.CHECKPOINT_LIGHT_CLIENT as `0
 export const HISTORICAL_PROXY_ID = process.env.HISTORICAL_PROXY_ID as `0x${string}`;
 export const PING_RECEIVER_PROGRAM_ID = process.env.PING_RECEIVER_PROGRAM_ID as `0x${string}`;
 
-export const PING_RECEIVER_SERVICE = 'PingReceiver0';
+export const PING_RECEIVER_SERVICE = 'PingReceiver';
 export const PING_RECEIVER_METHOD = 'SubmitReceipt';
 
 export const VARA_MNEMONIC_KEY = process.env.VARA_MNEMONIC_KEY as string;

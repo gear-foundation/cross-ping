@@ -1,5 +1,5 @@
-import { connectVara, connectWallet, varaProvider } from './vara';
-import { connectEthereum, listenPingFromEthereum } from './ethereum';
+import { connectVara, connectWallet, varaProvider } from './vara.js';
+import { connectEthereum, listenPingFromEthereum } from './ethereum.js';
 import { ethers } from 'ethers';
 import { relayEthToVara } from '@gear-js/bridge';
 import { createPublicClient, http } from 'viem';
@@ -11,7 +11,7 @@ import {
   PING_RECEIVER_PROGRAM_ID,
   PING_RECEIVER_SERVICE,
   PING_RECEIVER_METHOD,
-} from './config';
+} from './config.js';
 
 // Main relayer function
 async function main() {
@@ -19,7 +19,6 @@ async function main() {
   const ethApi = await connectEthereum();
   const wallet = connectWallet();
 
-  // Viem public client for proof/relay
   const viemPublicClient = createPublicClient({
     transport: http(ETHEREUM_HTTPS_RPC_URL),
   });
@@ -29,18 +28,22 @@ async function main() {
     console.log('🟢 new PingFromEthereum tx:', txHash);
 
     try {
-      const res = await relayEthToVara(
-        txHash,
-        BEACON_API_URL,
-        viemPublicClient,
-        varaProvider!,
-        CHECKPOINT_LIGHT_CLIENT,
-        HISTORICAL_PROXY_ID,
-        PING_RECEIVER_PROGRAM_ID,
-        PING_RECEIVER_SERVICE,
-        PING_RECEIVER_METHOD,
-        wallet
-      );
+      const res = await relayEthToVara({
+        transactionHash: txHash,
+        beaconRpcUrl: BEACON_API_URL,
+        ethereumPublicClient: viemPublicClient,
+        gearApi: varaProvider!,
+        checkpointClientId: CHECKPOINT_LIGHT_CLIENT,
+        historicalProxyId: HISTORICAL_PROXY_ID,
+        clientId: PING_RECEIVER_PROGRAM_ID,
+        clientServiceName: PING_RECEIVER_SERVICE,
+        clientMethodName: PING_RECEIVER_METHOD,
+        signer: wallet,
+        wait: true,
+        statusCb: (status, details) => {
+          console.log(`[Relay] [Status]`, status, details);
+        }
+      });
 
       console.log('🚀 Relayed Vara tx:', res.txHash, 'msgId:', res.msgId);
       if (res.error) console.error('⚠️ Proxy error:', res.error);

@@ -1,6 +1,6 @@
 import { GearApi } from '@gear-js/api';
 import { Keyring } from '@polkadot/api';
-import { VARA_RPC_URL, VARA_MNEMONIC_KEY } from './config';
+import { VARA_RPC_URL, VARA_MNEMONIC_KEY } from './config.js';
 
 export let varaProvider: GearApi | null = null;
 

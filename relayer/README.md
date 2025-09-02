@@ -41,11 +41,10 @@ VARA_MNEMONIC_KEY=<your_vara_mnemonic>
 > Use test values and keep sensitive keys secure!
 
 - `VARA_RPC_URL` — Vara node WebSocket endpoint
-- `CHECKPOINT_LIGHTH_CLIENT` — Address of the Checkpoint Light Client contract on Vara
 - `HISTORICAL_PROXY_ID` — Address of the Historical Proxy contract on Vara
 - `PING_RECEIVER_PROGRAM_ID` — Address of your target application program on Vara
 - `ETHEREUM_RPC_URL` — Ethereum node WebSocket endpoint
-- `ETHEREUM_HTTPS_RPC_URL` — Ethereum HTTPS endpoint (for eth-proof)
+- `ETHEREUM_HTTPS_RPC_URL` — Ethereum HTTPS endpoint
 - `ETH_CONTRACT_ADDRESS` — Deployed EthPinger contract address on Ethereum
 - `VARA_MNEMONIC_KEY` — Mnemonic for the Vara relayer wallet
 
@@ -71,7 +70,6 @@ You can customize or extend listeners and relay logic as needed.
 - `src/config.ts` — Configuration constants and IDLs
 - `src/ethereum.ts` — Ethereum connection & event listeners
 - `src/vara.ts` — Vara connection & event listeners
-- `src/helper.ts` — Helper functions
 - `src/types.ts` — Type definitions
 - `src/main.ts` — Application entry point (starts all listeners and the relay loop)
 - `.env` — Environment variables (endpoints, contract addresses, keys)

@@ -1,14 +1,11 @@
 import { ethers, ContractEventPayload, EventLog, WebSocketProvider } from 'ethers';
-import { ETHEREUM_RPC_URL, ETH_CONTRACT_ADDRESS } from './config';
-import { ETH_PINGER_ABI } from './types';
+import { ETHEREUM_RPC_URL, ETH_CONTRACT_ADDRESS } from './config.js';
+import { ETH_PINGER_ABI } from './types.js';
 
 export let ethereumProvider: ethers.WebSocketProvider | null = null;
 
 export async function connectEthereum(): Promise<ethers.WebSocketProvider> {
   if (ethereumProvider) return ethereumProvider;
-  if (!ETHEREUM_RPC_URL) {
-    throw new Error('ETHEREUM_RPC_URL is empty. Provide WS url or use viem polling in main.ts.');
-  }
   ethereumProvider = new ethers.WebSocketProvider(ETHEREUM_RPC_URL);
   await ethereumProvider.getBlockNumber();
   console.log('✅ Connected to Ethereum (WS)!');
