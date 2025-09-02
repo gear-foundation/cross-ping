@@ -3,6 +3,7 @@ import { connectEthereum, listenPingFromEthereum } from './ethereum.js';
 import { ethers } from 'ethers';
 import { relayEthToVara } from '@gear-js/bridge';
 import { createPublicClient, http } from 'viem';
+import { hoodi } from 'viem/chains';
 import {
   ETHEREUM_HTTPS_RPC_URL,
   BEACON_API_URL,
@@ -20,6 +21,7 @@ async function main() {
   const wallet = connectWallet();
 
   const viemPublicClient = createPublicClient({
+    chain: hoodi,
     transport: http(ETHEREUM_HTTPS_RPC_URL),
   });
 
