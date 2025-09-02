@@ -8,14 +8,3 @@ export const ETH_PINGER_ABI = [
     type: 'event',
   },
 ] as const satisfies Abi;
-
-export type PingMessage = {
-  from: string;
-  blockNumber: number;
-  txHash: string;
-};
-
-export interface NewCheckpointEvent {
-  slot: number;
-  tree_hash_root: string;
-}
