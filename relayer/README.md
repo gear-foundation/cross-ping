@@ -2,76 +2,90 @@
 
 This is the relayer for the **Ethereum ↔ Vara CrossPing** example.
 
-The relayer listens for events on Ethereum, builds proofs, and delivers messages to Vara for trustless processing via the bridge infrastructure.
+The relayer listens for events on Ethereum and delivers verified messages to a Vara program via the bridge infrastructure.
 
 ## What does this application do?
 
-- Connects to both Ethereum and Vara networks.
-- Listens for `PingFromEthereum` events emitted by the EthPinger contract on Ethereum.
-- For each event:
-    - Calculates the Ethereum beacon chain slot (based on block timestamp).
-    - Builds an event inclusion proof (using eth-proof).
-    - Prepares a message (slot, proof, destination, and payload) for relay.
-- Waits for the slot to be finalized on Vara (Checkpoint Light Client).
-- Submits the message to the Historical Proxy contract on Vara for validation and delivery to the target application program.
+- Connects to Ethereum (WebSocket for event streaming) and Vara (WebSocket).
+- Subscribes to the `EthPinger` contract event: `PingFromEthereum(address indexed from)`.
+- For each event, it calls `relayEthToVara`, which:
+  - composes the required Ethereum proof package,
+  - waits for checkpoint finality (`wait: true`),
+  - submits the message to the Historical Proxy on Vara,
+  - forwards it to your program method `PingReceiver::SubmitReceipt`.
+- Logs relay status updates for observability.
 
-It is implemented in Node.js/TypeScript, but any language can be used as long as required APIs are supported.
+> Proof composition and checkpoint tracking are handled internally by `@gear-js/bridge`.
 
 ## Requirements
 
-- Node.js (v18+ recommended)
-- Yarn (`npm install -g yarn`)
+- Node.js 18+
+- Yarn
 
 ## Environment Variables (`.env`)
 
-Create a `.env` file in the project root with the following variables:
+Create a `.env` file in the project root:
 
 ```env
+# === Vara ===
 VARA_RPC_URL=wss://testnet.vara.network
-CHECKPOINT_LIGHTH_CLIENT=0x88d171bc5a624cff727048829d636d75e195d94350fe19846fa59052578e0a79
-HISTORICAL_PROXY_ID=0xb764ed461f78c54b464c8c1b5f35a27017906d78ce0e58c61ca47402cfc89ace
-PING_RECEIVER_PROGRAM_ID=<your_ping_receiver_program_address>
-ETHEREUM_RPC_URL=wss://reth-rpc.gear-tech.io/ws
-ETHEREUM_HTTPS_RPC_URL=https://reth-rpc.gear-tech.io
-ETH_CONTRACT_ADDRESS=<your_eth_pinger_contract_address>
 VARA_MNEMONIC_KEY=<your_vara_mnemonic>
+
+# === Bridge on Vara ===
+CHECKPOINT_LIGHT_CLIENT=0x...
+HISTORICAL_PROXY_ID=0x...
+PING_RECEIVER_PROGRAM_ID=0x...
+
+# === Ethereum (Hoodi) ===
+ETHEREUM_RPC_URL=wss://hoodi-reth-rpc.gear-tech.io/ws     # WebSocket for ethers event subscription
+ETHEREUM_HTTPS_RPC_URL=https://hoodi-reth-rpc.gear-tech.io # HTTP for viem receipt/proofs
+ETH_CONTRACT_ADDRESS=0x...
+
+# === Beacon API ===
+BEACON_API_URL=https://lodestar-hoodi.chainsafe.io
 ```
 
-> **Never commit your PRIVATE_KEY or VARA_MNEMONIC_KEY to version control.**  
-> Use test values and keep sensitive keys secure!
+### Variable descriptions
 
-- `VARA_RPC_URL` — Vara node WebSocket endpoint
-- `CHECKPOINT_LIGHTH_CLIENT` — Address of the Checkpoint Light Client contract on Vara
-- `HISTORICAL_PROXY_ID` — Address of the Historical Proxy contract on Vara
-- `PING_RECEIVER_PROGRAM_ID` — Address of your target application program on Vara
-- `ETHEREUM_RPC_URL` — Ethereum node WebSocket endpoint
-- `ETHEREUM_HTTPS_RPC_URL` — Ethereum HTTPS endpoint (for eth-proof)
-- `ETH_CONTRACT_ADDRESS` — Deployed EthPinger contract address on Ethereum
-- `VARA_MNEMONIC_KEY` — Mnemonic for the Vara relayer wallet
+- `VARA_RPC_URL` — Vara WebSocket RPC endpoint  
+- `VARA_MNEMONIC_KEY` — mnemonic for the Vara account used by the relayer  
+- `CHECKPOINT_LIGHT_CLIENT` — address of the Checkpoint Light Client on Vara  
+- `HISTORICAL_PROXY_ID` — address of the Historical Proxy on Vara  
+- `PING_RECEIVER_PROGRAM_ID` — your target Vara program address  
+- `ETHEREUM_RPC_URL` — Ethereum **WebSocket** RPC (used by ethers for live events)  
+- `ETHEREUM_HTTPS_RPC_URL` — Ethereum **HTTP** RPC (used by viem for receipts/proofs)  
+- `ETH_CONTRACT_ADDRESS` — deployed `EthPinger` contract address  
+- `BEACON_API_URL` — Beacon API endpoint
 
-## Building & Running
+## Build & Run
 
 Install dependencies:
 
-```sh
+```bash
 yarn install
 ```
 
-To start the relayer:
+Start in dev (TypeScript via tsx):
 
-```sh
+```bash
 yarn dev
 ```
 
-The entry point is `src/main.ts`.  
-You can customize or extend listeners and relay logic as needed.
+Or build and run the compiled output:
+
+```bash
+yarn build
+yarn start   # runs node dist/main.js
+```
+
+The entry point is `src/main.ts`.
 
 ## Project Structure
 
-- `src/config.ts` — Configuration constants and IDLs
-- `src/ethereum.ts` — Ethereum connection & event listeners
-- `src/vara.ts` — Vara connection & event listeners
-- `src/helper.ts` — Helper functions
-- `src/types.ts` — Type definitions
-- `src/main.ts` — Application entry point (starts all listeners and the relay loop)
-- `.env` — Environment variables (endpoints, contract addresses, keys)
+- `src/config.ts` — environment loading and configuration constants
+- `src/ethereum.ts` — Ethereum connector & event listener (ethers v6, WS)
+- `src/vara.ts` — Vara connector & signer
+- `src/types.ts` — EthPinger ABI (no extra types)
+- `src/bridge-shim.ts` — safe import for `relayEthToVara` (avoids package re-export issues)
+- `src/main.ts` — application entry point (wires up listeners and relay flow)
+- `.env` — environment variables (endpoints, addresses, keys)

@@ -10,6 +10,7 @@ eth-pinger/.env
 relayer/.env
 relayer/yarn.lock
 relayer/node_modules/
+relayer/dist/
 
 # === ping-receiver ===
 ping-receiver/Cargo.lock

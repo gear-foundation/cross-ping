@@ -2,27 +2,26 @@
   "name": "cross-ping-relayer",
   "version": "1.0.0",
   "description": "Cross-chain relayer between Vara and Ethereum",
-  "main": "dist/index.js",
+  "type": "module",
+  "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/main.js",
-    "dev": "ts-node src/main.ts"
+    "dev": "tsx src/main.ts"
   },
   "dependencies": {
-    "@gear-js/api": "^0.42.0",
+    "@gear-js/api": "^0.44.0",
+    "@gear-js/bridge": "^0.1.2",
     "@polkadot/api": "^16.1.2",
     "dotenv": "^16.4.5",
-    "eth-proof": "^2.1.6",
     "ethers": "^6.11.1",
-    "install": "^0.13.0",
-    "rlp": "^3.0.0",
-    "sails-js": "^0.4.2",
-    "sails-js-parser": "^0.4.2",
-    "web3": "^4.16.0"
+    "sails-js": "^0.4.3",
+    "sails-js-parser": "^0.4.3",
+    "viem": "^2.12.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.57",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1",
     "typescript": "^5.3.3"
   }
 }

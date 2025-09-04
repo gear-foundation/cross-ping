@@ -1,35 +1,26 @@
 #![no_std]
 use sails_rs::prelude::*;
 
-#[derive(Debug, Encode, Decode, TypeInfo)]
-pub struct PingFromEthereum {
-    pub slot: u64,
-    pub transaction_index: u32,
-    pub receipt_rlp: Vec<u8>,
-}
-
-#[derive(Debug, Encode, Decode, TypeInfo)]
+#[sails_rs::event]
+#[derive(Encode, Decode, TypeInfo)]
 pub enum Event {
-    PingFromEthereum(PingFromEthereum),
+    ReceiptSubmitted(u64, u32),
 }
 
 pub struct PingReceiverService;
 
 #[service(events = Event)]
 impl PingReceiverService {
-    // Route ID = 0
+    #[export]
     pub fn submit_receipt(
         &mut self,
         slot: u64,
         transaction_index: u32,
-        receipt_rlp: Vec<u8>,
-    ) {
-        self.emit_event(Event::PingFromEthereum(PingFromEthereum {
-            slot,
-            transaction_index,
-            receipt_rlp,
-        }))
-        .expect("Failed to emit event");
+        _receipt_rlp: Vec<u8>,
+    ) -> Result<(), String> {
+        self.emit_event(Event::ReceiptSubmitted(slot, transaction_index))
+            .map_err(|_| "Failed to emit event".to_string())?;
+        Ok(())
     }
 }
 
@@ -40,7 +31,14 @@ impl PingReceiverProgram {
     pub fn new() -> Self {
         Self
     }
+
     pub fn ping_receiver(&self) -> PingReceiverService {
         PingReceiverService
+    }
+}
+
+impl Default for PingReceiverProgram {
+    fn default() -> Self {
+        Self::new()
     }
 }

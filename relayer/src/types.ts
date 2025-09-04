@@ -1,18 +1,10 @@
-export interface EthereumProvider {
-    provider: any;
-    wallet: any;
-    contract: any;
-} 
+import type { Abi } from 'viem';
 
-export type PingMessage = {
-    from: string,
-    blockNumber: number,
-    txHash: string,
-    slot: number,
-    proof: string,
-};
-
-export interface NewCheckpointEvent {
-    slot: number;
-    tree_hash_root: string;
-}
+export const ETH_PINGER_ABI = [
+  {
+    anonymous: false,
+    inputs: [{ indexed: true, internalType: 'address', name: 'from', type: 'address' }],
+    name: 'PingFromEthereum',
+    type: 'event',
+  },
+] as const satisfies Abi;
