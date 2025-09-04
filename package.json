@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@ethereumjs/rlp": "^10.0.0",
-    "@gear-js/bridge": "^0.0.1",
-    "viem": "^2.36.0"
-  }
-}
