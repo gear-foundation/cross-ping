@@ -1,0 +1,19 @@
+[workspace]
+members = [
+    "cross-ping-vara",
+    "cross-ping-vara/app",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
+[workspace.dependencies]
+gtest = "1.9.0"
+tokio = { version = "1.41", features = ["rt", "macros"] }
+parity-scale-codec = { version = "3", default-features = false, features = ["derive"] }
+sails-rs = { version = "0.9.0" }
+scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
+mockall = { version = "0.13.1" }
+gbuiltin-eth-bridge = "1.9.0"

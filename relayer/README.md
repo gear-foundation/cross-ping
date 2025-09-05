@@ -1,91 +1,120 @@
-# Relayer for CrossPing
+# Bidirectional Cross-Chain Relayer
 
-This is the relayer for the **Ethereum ↔ Vara CrossPing** example.
+This is the unified bidirectional relayer for the Vara ↔ Ethereum Cross-Chain Ping example. It supports both relay directions:
 
-The relayer listens for events on Ethereum and delivers verified messages to a Vara program via the bridge infrastructure.
+- **Ethereum → Vara**: Listens for `PingFromEthereum` events on Ethereum and relays them to Vara
+- **Vara → Ethereum**: Listens for `PingSent` events on Vara and relays them to Ethereum
 
-## What does this application do?
+## Features
 
-- Connects to Ethereum (WebSocket for event streaming) and Vara (WebSocket).
-- Subscribes to the `EthPinger` contract event: `PingFromEthereum(address indexed from)`.
-- For each event, it calls `relayEthToVara`, which:
-  - composes the required Ethereum proof package,
-  - waits for checkpoint finality (`wait: true`),
-  - submits the message to the Historical Proxy on Vara,
-  - forwards it to your program method `PingReceiver::SubmitReceipt`.
-- Logs relay status updates for observability.
+✅ **Bidirectional relay support** - Both Ethereum→Vara and Vara→Ethereum  
+✅ **Flexible configuration** - Enable one or both directions via environment variables  
+✅ **Viem-based** - Modern Ethereum interactions using viem library  
+✅ **Event coordination** - Sophisticated handling of PingSent and MessageQueued events  
+✅ **Comprehensive logging** - Clear status tracking for both relay directions  
+✅ **Error handling** - Robust error handling and recovery  
 
-> Proof composition and checkpoint tracking are handled internally by `@gear-js/bridge`.
+## Architecture
 
-## Requirements
+```
+relayer/
+├── src/
+│   ├── main.ts              # Bidirectional entry point
+│   ├── config.ts            # Unified configuration
+│   ├── ethereum.ts          # Ethereum clients (public + wallet)
+│   ├── vara.ts              # Vara connection + both event listeners
+│   ├── relayers/
+│   │   ├── eth-to-vara.ts   # Ethereum → Vara relay logic
+│   │   └── vara-to-eth.ts   # Vara → Ethereum relay logic
+│   └── types.ts             # Type definitions
+└── package.json             # Dependencies and scripts
+```
 
-- Node.js 18+
-- Yarn
+## Environment Variables
 
-## Environment Variables (`.env`)
-
-Create a `.env` file in the project root:
-
+### Common (Required)
 ```env
-# === Vara ===
 VARA_RPC_URL=wss://testnet.vara.network
-VARA_MNEMONIC_KEY=<your_vara_mnemonic>
+ETHEREUM_WS_RPC_URL=wss://reth-rpc.gear-tech.io/ws  
+ETHEREUM_HTTPS_RPC_URL=https://reth-rpc.gear-tech.io
+```
 
-# === Bridge on Vara ===
+### Ethereum → Vara Relay
+```env
+VARA_MNEMONIC_KEY=your_vara_mnemonic_here
 CHECKPOINT_LIGHT_CLIENT=0x...
 HISTORICAL_PROXY_ID=0x...
 PING_RECEIVER_PROGRAM_ID=0x...
-
-# === Ethereum (Hoodi) ===
-ETHEREUM_RPC_URL=wss://hoodi-reth-rpc.gear-tech.io/ws     # WebSocket for ethers event subscription
-ETHEREUM_HTTPS_RPC_URL=https://hoodi-reth-rpc.gear-tech.io # HTTP for viem receipt/proofs
 ETH_CONTRACT_ADDRESS=0x...
-
-# === Beacon API ===
-BEACON_API_URL=https://lodestar-hoodi.chainsafe.io
+BEACON_API_URL=https://...
 ```
 
-### Variable descriptions
+### Vara → Ethereum Relay  
+```env
+CROSS_PING_PROGRAM_ID=0x...
+MESSAGE_QUEUE_PROXY_ADDRESS=0x...
+PRIVATE_KEY=0x...
+```
 
-- `VARA_RPC_URL` — Vara WebSocket RPC endpoint  
-- `VARA_MNEMONIC_KEY` — mnemonic for the Vara account used by the relayer  
-- `CHECKPOINT_LIGHT_CLIENT` — address of the Checkpoint Light Client on Vara  
-- `HISTORICAL_PROXY_ID` — address of the Historical Proxy on Vara  
-- `PING_RECEIVER_PROGRAM_ID` — your target Vara program address  
-- `ETHEREUM_RPC_URL` — Ethereum **WebSocket** RPC (used by ethers for live events)  
-- `ETHEREUM_HTTPS_RPC_URL` — Ethereum **HTTP** RPC (used by viem for receipts/proofs)  
-- `ETH_CONTRACT_ADDRESS` — deployed `EthPinger` contract address  
-- `BEACON_API_URL` — Beacon API endpoint
+> **Note**: You can enable one or both relay directions by providing the corresponding environment variables. The relayer will automatically detect which directions are configured and enable them.
 
-## Build & Run
+## Usage
 
-Install dependencies:
-
+### Install Dependencies
 ```bash
-yarn install
+pnpm install
 ```
 
-Start in dev (TypeScript via tsx):
-
+### Development
 ```bash
-yarn dev
+pnpm dev
 ```
 
-Or build and run the compiled output:
-
+### Production
 ```bash
-yarn build
-yarn start   # runs node dist/main.js
+pnpm build
+pnpm start
 ```
 
-The entry point is `src/main.ts`.
+### Clean Build
+```bash
+pnpm clean
+pnpm build
+```
 
-## Project Structure
+## Relay Flow
 
-- `src/config.ts` — environment loading and configuration constants
-- `src/ethereum.ts` — Ethereum connector & event listener (ethers v6, WS)
-- `src/vara.ts` — Vara connector & signer
-- `src/types.ts` — EthPinger ABI (no extra types)
-- `src/bridge-shim.ts` — safe import for `relayEthToVara` (avoids package re-export issues)
-- `src/main.ts` — application entry point (wires up listeners and relay flow)
-- `.env` — environment variables (endpoints, addresses, keys)
+### Ethereum → Vara
+1. Listen for `PingFromEthereum` events on Ethereum contract
+2. Extract transaction hash from event
+3. Use `@gear-js/bridge` to relay message to Vara
+4. Submit to PingReceiver program on Vara network
+
+### Vara → Ethereum  
+1. Listen for `PingSent` events on CrossPing program
+2. Coordinate with `MessageQueued` events from gearEthBridge
+3. Use `@gear-js/bridge` to relay message to Ethereum
+4. Submit to MessageQueue contract on Ethereum
+
+## Monitoring
+
+The relayer provides comprehensive logging with prefixes:
+- `[ETH→VARA]` - Ethereum to Vara relay logs
+- `[VARA→ETH]` - Vara to Ethereum relay logs  
+- `[Bridge]` - Bridge event coordination logs
+- `[PingSent]` - Vara event processing logs
+- `[Relay] [Status]` - Bridge library status updates
+
+## Error Handling
+
+- **Connection failures**: Automatic retry and reconnection
+- **Missing transaction hashes**: Graceful error handling with logging
+- **Bridge errors**: Detailed error reporting and status tracking
+- **Event coordination**: Handles early/late event arrival patterns
+
+## Requirements
+
+- Node.js 18+ 
+- TypeScript 5+
+- Access to Vara and Ethereum networks
+- Appropriate private keys/mnemonics for transaction signing

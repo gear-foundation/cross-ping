@@ -1,0 +1,35 @@
+type Error = enum {
+  DestinationNotInitialized,
+  BridgeSendFailed,
+  BridgeReplyFailed,
+  InvalidBridgeResponse,
+};
+
+type PingSent = struct {
+  nonce: opt u64,
+  message_hash: h256,
+};
+
+constructor {
+  Create : ();
+};
+
+service Sender {
+  SendPing : (destination: h160) -> result (null, Error);
+
+  events {
+    PingSent: PingSent;
+  }
+};
+
+service Receiver {
+  SubmitReceipt : (slot: u64, transaction_index: u32, _receipt_rlp: vec u8) -> result (null, str);
+
+  events {
+    ReceiptSubmitted: struct {
+      u64,
+      u32,
+    };
+  }
+};
+

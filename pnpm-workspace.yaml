@@ -1,0 +1,4 @@
+packages:
+  - 'relayer'
+  - 'cross-ping-eth'
+  - "cross-ping-vara"
