@@ -1,0 +1,21 @@
+[package]
+name = "cross-ping"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cross-ping-app = { path = "app" }
+
+[build-dependencies]
+cross-ping-app = { path = "app" }
+sails-rs = { workspace = true, features = ["wasm-builder", "idl-gen"] }
+
+[dev-dependencies]
+cross-ping = { path = ".", features = ["wasm-binary"] }
+sails-rs = { workspace = true, features = ["gtest"] }
+gtest.workspace = true
+tokio = { workspace = true, features = ["rt", "macros"] }
+parity-scale-codec.workspace = true
+
+[features]
+wasm-binary = []

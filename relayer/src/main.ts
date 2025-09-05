@@ -1,65 +1,40 @@
-import { connectVara, connectWallet, varaProvider } from './vara.js';
-import { connectEthereum, listenPingFromEthereum } from './ethereum.js';
-import { ethers } from 'ethers';
-import { relayEthToVara } from '@gear-js/bridge';
-import { createPublicClient, http } from 'viem';
-import { hoodi } from 'viem/chains';
-import {
-  ETHEREUM_HTTPS_RPC_URL,
-  BEACON_API_URL,
-  CHECKPOINT_LIGHT_CLIENT,
-  HISTORICAL_PROXY_ID,
-  PING_RECEIVER_PROGRAM_ID,
-  PING_RECEIVER_SERVICE,
-  PING_RECEIVER_METHOD,
-} from './config.js';
+import { connectVara } from "./vara.js";
+import { connectEthereum } from "./ethereum.js";
+import { startEthToVaraRelay } from "./relayers/eth-to-vara.js";
+import { startVaraToEthRelay } from "./relayers/vara-to-eth.js";
+import { ENABLE_ETH_TO_VARA, ENABLE_VARA_TO_ETH } from "./config.js";
 
-// Main relayer function
 async function main() {
-  await connectVara();
-  const ethApi = await connectEthereum();
-  const wallet = connectWallet();
+  console.log("🚀 Starting bidirectional cross-chain relayer...");
+  console.log("═".repeat(60));
 
-  const viemPublicClient = createPublicClient({
-    chain: hoodi,
-    transport: http(ETHEREUM_HTTPS_RPC_URL),
-  });
+  // Connect to both networks
+  const gearApi = await connectVara();
+  const ethereumClient = await connectEthereum();
 
-  listenPingFromEthereum(ethApi, async (_from: string, event: ethers.EventLog) => {
-    const txHash = event.transactionHash as `0x${string}`;
-    console.log('🟢 new PingFromEthereum tx:', txHash);
+  // Start enabled relay directions
+  const relayPromises: Promise<void>[] = [];
 
-    try {
-      const res = await relayEthToVara({
-        transactionHash: txHash,
-        beaconRpcUrl: BEACON_API_URL,
-        ethereumPublicClient: viemPublicClient,
-        gearApi: varaProvider!,
-        checkpointClientId: CHECKPOINT_LIGHT_CLIENT,
-        historicalProxyId: HISTORICAL_PROXY_ID,
-        clientId: PING_RECEIVER_PROGRAM_ID,
-        clientServiceName: PING_RECEIVER_SERVICE,
-        clientMethodName: PING_RECEIVER_METHOD,
-        signer: wallet,
-        wait: true,
-        statusCb: (status, details) => {
-          console.log(`[Relay] [Status]`, status, details);
-        }
-      });
+  if (ENABLE_ETH_TO_VARA) {
+    relayPromises.push(startEthToVaraRelay(gearApi, ethereumClient));
+  }
 
-      console.log('🚀 Relayed Vara tx:', res.txHash, 'msgId:', res.msgId);
-      if (res.error) console.error('⚠️ Proxy error:', res.error);
-      const finalized = await res.isFinalized;
-      console.log('✅ Finalized:', finalized);
-    } catch (e) {
-      console.error('❌ relayEthToVara failed:', e);
-    }
-  });
+  if (ENABLE_VARA_TO_ETH) {
+    relayPromises.push(startVaraToEthRelay(gearApi, ethereumClient));
+  }
 
-  console.log('\n🚀 Relayer is running and listening for Pings from Ethereum...');
+  // Wait for all relays to be set up
+  await Promise.all(relayPromises);
+
+  console.log("═".repeat(60));
+  console.log(
+    "🎯 Relayer is running and listening for cross-chain messages...",
+  );
+  console.log("   Press Ctrl+C to stop");
+  console.log("═".repeat(60));
 }
 
-main().catch(e => {
-  console.error('Fatal:', e);
+main().catch((e) => {
+  console.error("💥 Fatal error:", e);
   process.exit(1);
 });
