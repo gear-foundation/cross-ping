@@ -1,0 +1,23 @@
+[package]
+name = "ping-receiver"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ping-receiver-app = { path = "app" }
+
+[build-dependencies]
+ping-receiver-app = { path = "app" }
+sails-rs = { workspace = true, features = ["wasm-builder"] }
+sails-idl-gen = { workspace = true }
+
+[dev-dependencies]
+ping-receiver = { path = ".", features = ["wasm-binary"] }
+ping-receiver-client = { path = "client", optional = true }
+sails-rs = { workspace = true, features = ["gtest"] }
+gtest = { workspace = true }
+tokio = { workspace = true }
+parity-scale-codec = { workspace = true }
+
+[features]
+wasm-binary = []

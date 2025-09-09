@@ -1,0 +1,9 @@
+{
+    "name": "eth-vara-receiver-vara",
+    "private": true,
+    "version": "1.0.0",
+    "scripts": {
+        "build": "cargo build --workspace",
+        "clean": "cargo clean"
+    }
+}

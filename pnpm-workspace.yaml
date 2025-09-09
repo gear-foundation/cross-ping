@@ -1,0 +1,7 @@
+packages:
+  - 'packages/eth-vara-pinger-eth'
+  - 'packages/eth-vara-receiver-vara'
+  - 'packages/eth-vara-relayer-node'
+  - 'packages/vara-eth-pinger-vara'
+  - 'packages/vara-eth-receiver-eth'
+  - 'packages/vara-eth-relayer-node'

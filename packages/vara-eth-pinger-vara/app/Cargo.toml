@@ -1,0 +1,14 @@
+[package]
+name = "cross-ping-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sails-rs = { workspace = true }
+gbuiltin-eth-bridge = { workspace = true }
+parity-scale-codec = { workspace = true, features = ["derive"] }
+scale-info = { workspace = true, features = ["derive"] }
+
+[features]
+default = []
+wasm-binary = []

@@ -1,0 +1,42 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/evgenijfilatov/work/vara-eth-cross-ping/ping-receiver/contracts/ping-receiver.sol": {
+      "lastModificationDate": 1756813929006,
+      "contentHash": "86da2104afdcc011618f8e844bcdd6e7",
+      "sourceName": "contracts/ping-receiver.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IMessageHandler",
+        "PingReceiver"
+      ]
+    }
+  }
+}
