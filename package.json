@@ -6,8 +6,6 @@
   "packageManager": "pnpm@10.15.1",
   "workspaces": ["packages/*"],
   "scripts": {
-    "install": "pnpm install",
-
     "build": "pnpm run build:js && pnpm run build:rust",
     "build:js": "pnpm -r --if-present build",
     "build:rust": "cargo build --workspace",
