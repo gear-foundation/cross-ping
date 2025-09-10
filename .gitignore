@@ -1,18 +1,10 @@
-# === eth-pinger ===
-eth-pinger/artifacts/
-eth-pinger/cache/
-eth-pinger/typechain-types/
-eth-pinger/node_modules/
-eth-pinger/yarn.lock
-eth-pinger/.env
+.DS_Store
+.binpath
+.env
 
-# === relayer ===
-relayer/.env
-relayer/yarn.lock
-relayer/node_modules/
-relayer/dist/
+cross-ping-eth/artifacts/
+cross-ping-eth/cache/
 
-# === ping-receiver ===
-ping-receiver/Cargo.lock
-ping-receiver/.binpath
-ping-receiver/target/
+node_modules/
+target/
+dist/

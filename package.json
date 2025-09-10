@@ -1,0 +1,26 @@
+{
+  "name": "cross-ping",
+  "version": "1.0.0",
+  "description": "Vara ↔ Ethereum Cross-Chain Ping monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "pnpm run build:js && pnpm run build:rust",
+    "build:js": "pnpm -r --if-present build",
+    "build:rust": "cargo build --workspace",
+
+    "clean": "pnpm -r --if-present clean && cargo clean",
+
+    "dev:relayer:eth-vara": "pnpm --filter eth-vara-relayer-node dev",
+    "dev:relayer:vara-eth": "pnpm --filter vara-eth-relayer-node dev",
+
+    "deploy:eth-vara:pinger": "pnpm --filter eth-vara-pinger-eth deploy",
+    "ping:eth-vara": "pnpm --filter eth-vara-pinger-eth ping",
+    "deploy:vara-eth:receiver": "pnpm --filter vara-eth-receiver-eth deploy"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "pnpm": ">=8.0.0"
+  }
+}

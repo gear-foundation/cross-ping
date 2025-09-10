@@ -1,0 +1,18 @@
+{
+  "name": "vara-eth-receiver-eth",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "deploy": "npx hardhat run scripts/deploy.js --network hoodi",
+    "clean": "rm -rf cache out artifacts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.9",
+    "ethers": "^6.14.4",
+    "hardhat": "^2.24.3"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  }
+}
