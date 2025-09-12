@@ -23,7 +23,6 @@ It can be used by developers to:
 - Experiment with sending and receiving messages across chains.  
 - Learn how relayers and contracts integrate into a simple end-to-end flow.  
 
-
 ## Installation
 
 From the repository root:
@@ -62,7 +61,7 @@ pnpm build:rust
   pnpm --filter vara-eth-relayer-node dev
   ```
 
-## ⛓️ Deploy and Ping (Hardhat Contracts)
+## Deploy and Ping (Hardhat Contracts)
 
 - Deploy pinger on Ethereum (Holesky network):
   ```bash
@@ -78,9 +77,8 @@ pnpm build:rust
   ```bash
   pnpm --filter vara-eth-receiver-eth deploy
   ```
----
 
-## 🦀 Build Vara Programs
+## Build Vara Programs
 
 Rust/Sails packages are built via the root Cargo workspace:
 
@@ -94,3 +92,20 @@ Or individually:
 pnpm --filter eth-vara-receiver-vara build
 pnpm --filter vara-eth-pinger-vara build
 ```
+
+## Run Order per Flow
+
+### Vara → Ethereum Flow
+1. **Deploy PingReceiver on Ethereum** using Hardhat.  
+2. **Deploy Vara Ping program** (`vara-eth-pinger-vara`) via [Gear IDEA](https://idea.gear-tech.io/).  
+   - Provide the Ethereum PingReceiver’s **H160 address** (20 bytes) as the **initial payload**.  
+3. **Start the Vara → ETH relayer** (`vara-eth-relayer-node`) with the proper configuration.  
+4. **Trigger a Ping** directly from Vara (via IDEA’s *SendMessage*).  
+5. With the relayer running, the Ping is delivered and processed on Ethereum.
+
+### Ethereum → Vara Flow
+1. **Deploy EthPinger contract** on Ethereum (`eth-vara-pinger-eth`).  
+2. **Deploy Vara PingReceiver program** (`eth-vara-receiver-vara`) via [Gear IDEA](https://idea.gear-tech.io/).  
+3. **Start the ETH → Vara relayer** (`eth-vara-relayer-node`) with the proper configuration.  
+4. **Trigger a Ping** by calling the `ping()` function in the EthPinger contract.  
+5. With the relayer running, the Ping is delivered and processed on Vara.
